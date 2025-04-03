@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tgops.fullname" . }}
+  labels:
+    {{- include "tgops.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tgops.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tgops.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- if .Values.prometheus.scrape }}
+        prometheus.io/scrape: "{{ .Values.prometheus.scrape }}"
+        prometheus.io/port: "{{ .Values.prometheus.port }}"
+        {{- end }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "tgops.fullname" .) }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: metrics
+          containerPort: {{ .Values.service.port }}
+        env:
+        - name: METRICS_PORT
+          value: "{{ .Values.env.metricsPort }}"
+        - name: TELEGRAM_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "tgops.fullname" . }}-secret
+              key: token
+        - name: ALLOWED_USERS
+          value: "{{ .Values.env.allowedUsers }}"
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}

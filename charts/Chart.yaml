@@ -1,0 +1,6 @@
+apiVersion: v2
+name: tgops
+description: A Helm chart for Kubernetes Telegram Bot
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

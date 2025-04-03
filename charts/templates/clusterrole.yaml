@@ -1,0 +1,15 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.rbac.clusterRole.name | default (printf "%s-reader" (include "tgops.fullname" .)) }}
+  labels:
+    {{- include "tgops.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["helm.toolkit.fluxcd.io"]
+  resources: ["helmreleases"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: [""]
+  resources: ["namespaces", "pods"]
+  verbs: ["get", "list"]
+{{- end }}

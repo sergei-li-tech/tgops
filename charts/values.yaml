@@ -1,0 +1,51 @@
+replicaCount: 1
+
+image:
+  repository: devopstools888/k8s-tg-bot
+  tag: sha-3845c2a
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: tgops
+
+rbac:
+  create: true
+  clusterRole:
+    name: tgops-reader
+  clusterRoleBinding:
+    name: tgops-reader
+
+secrets:
+  telegramBotToken: ""
+
+env:
+  metricsPort: "8000"
+  allowedUsers: "0000000000,1111111111"
+
+resources:
+  requests:
+    memory: "100Mi"
+    cpu: "10m"
+  limits:
+    memory: "100Mi"
+    cpu: "100m"
+
+service:
+  type: ClusterIP
+  port: 8000
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  additionalLabels:
+    release: prometheus-stack
+
+prometheus:
+  scrape: true
+  port: "8000"
+
+namespace: default
