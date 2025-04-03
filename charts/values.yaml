@@ -41,11 +41,7 @@ service:
 serviceMonitor:
   enabled: true
   interval: 30s
-  additionalLabels:
-    release: prometheus-stack
 
 prometheus:
   scrape: true
   port: "8000"
-
-namespace: default

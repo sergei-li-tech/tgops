@@ -17,5 +17,5 @@ spec:
     interval: {{ .Values.serviceMonitor.interval }}
   namespaceSelector:
     matchNames:
-    - {{ .Values.namespace | default .Release.Namespace }}
+    - {{ .Release.Namespace }}
 {{- end }}

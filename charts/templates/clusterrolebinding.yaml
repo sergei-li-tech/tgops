@@ -8,7 +8,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.serviceAccount.name | default (include "tgops.fullname" .) }}
-  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: {{ .Values.rbac.clusterRole.name | default (printf "%s-reader" (include "tgops.fullname" .)) }}
