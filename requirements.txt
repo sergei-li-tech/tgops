@@ -1,0 +1,3 @@
+python-telegram-bot
+kubernetes
+prometheus_client
