@@ -1,5 +1,6 @@
 import os
 import asyncio
+import json
 from datetime import datetime
 from functools import wraps
 from prometheus_client import start_http_server, Counter, Gauge, Histogram
@@ -63,6 +64,17 @@ try:
     print(f"Authorized users: {ALLOWED_USERS}")
 except ValueError as e:
     raise ValueError("ALLOWED_USERS must be a comma-separated list of integers") from e
+
+# Parse application logs map from environment variable
+APP_LOGS_MAP = {}
+app_logs_str = os.getenv('APP_LOGS_MAP', '')
+if app_logs_str:
+    try:
+        APP_LOGS_MAP = json.loads(app_logs_str)
+        print(f"Loaded logs map for {len(APP_LOGS_MAP)} applications")
+    except json.JSONDecodeError as e:
+        print(f"Warning: Failed to parse APP_LOGS_MAP: {e}")
+        print("Expected format: '{\"app1\":\"https://logs-link\",\"app2\":\"https://another-link\"}'")
 
 def measure_latency(command_name):
     """Decorator to measure command latency"""
@@ -188,6 +200,60 @@ async def apps_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         ERROR_COUNTER.labels(type=type(e).__name__).inc()
         await update.message.reply_text(f"Error searching pods: {str(e)}")
+
+@restricted
+@measure_latency('logs')
+async def logs_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handler to show log links for applications"""
+    try:
+        if not APP_LOGS_MAP:
+            await update.message.reply_text("No application log links are configured. Set the APP_LOGS_MAP environment variable.")
+            return
+        
+        message = "📋 Application Log Links:\n\n"
+        
+        # If specific app name provided, show just that app
+        if context.args and len(context.args) > 0:
+            app_name = context.args[0].lower()
+            found = False
+            
+            for name, url in APP_LOGS_MAP.items():
+                if app_name in name.lower():
+                    message += f"🔍 *{name}*\n{url}\n\n"
+                    found = True
+            
+            if not found:
+                message = f"No log links found for application matching '{app_name}'"
+        else:
+            # Otherwise show all apps
+            for name, url in APP_LOGS_MAP.items():
+                message += f"📊 *{name}*\n{url}\n\n"
+        
+        # Create inline keyboard with buttons for each app
+        keyboard = []
+        row = []
+        for i, (name, _) in enumerate(APP_LOGS_MAP.items()):
+            # Create new row after every 2 buttons
+            if i > 0 and i % 2 == 0:
+                keyboard.append(row)
+                row = []
+            row.append(InlineKeyboardButton(name, callback_data=f"logs:{name}"))
+        
+        # Add the last row if it has buttons
+        if row:
+            keyboard.append(row)
+        
+        reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
+        
+        await update.message.reply_text(
+            message, 
+            parse_mode='Markdown',
+            reply_markup=reply_markup,
+            disable_web_page_preview=True  # Don't show link previews
+        )
+    except Exception as e:
+        ERROR_COUNTER.labels(type=type(e).__name__, command='logs').inc()
+        await update.message.reply_text(f"Error retrieving log links: {str(e)}")
 
 
 async def suspend_release(namespace: str, name: str) -> bool:
@@ -385,9 +451,13 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()  # Answer the callback query to remove the loading state
     
     try:
-        action, namespace, name = query.data.split(":")
+        parts = query.data.split(":")
+        action = parts[0]
         
-        if action == "toggle":
+        if action == "toggle" and len(parts) == 3:
+            namespace = parts[1]
+            name = parts[2]
+            
             # First suspend
             await query.edit_message_text(f"Suspending release {namespace}/{name}...")
             if await suspend_release(namespace, name):
@@ -406,6 +476,17 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await query.edit_message_text(
                     f"❌ Failed to suspend release {namespace}/{name}"
                 )
+        elif action == "logs" and len(parts) == 2:
+            app_name = parts[1]
+            if app_name in APP_LOGS_MAP:
+                log_url = APP_LOGS_MAP[app_name]
+                await query.edit_message_text(
+                    f"📊 *{app_name} Logs*\n{log_url}",
+                    parse_mode='Markdown',
+                    disable_web_page_preview=True
+                )
+            else:
+                await query.edit_message_text(f"❌ No log link found for {app_name}")
                 
     except Exception as e:
         await query.edit_message_text(f"❌ Error processing action: {str(e)}")
@@ -424,6 +505,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Available commands:
 /checkreleases - List unhealthy Flux HelmReleases and manage them
 /apps - List apps status
+/logs [app] - Show log links for applications (optional: filter by app name)
     """
     await update.message.reply_text(help_text)
 
@@ -445,6 +527,7 @@ def main():
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('help', help_command))
     app.add_handler(CommandHandler('apps', apps_command))
+    app.add_handler(CommandHandler('logs', logs_command))
     app.add_handler(CommandHandler('checkreleases', check_releases_command))
     
     # Add callback query handler for buttons
