@@ -3,7 +3,17 @@ entries:
   tgops:
   - apiVersion: v2
     appVersion: 1.2.0
-    created: "2025-04-17T14:51:24.257074+07:00"
+    created: "2025-04-17T14:57:09.900818+07:00"
+    description: A Helm chart for Kubernetes Telegram Bot
+    digest: a126055dd0faa54a14cc693a0188d4eec42a5868ba8d0afa580a2c42237bcedd
+    name: tgops
+    type: application
+    urls:
+    - https://sergei-li-tech.github.io/tgops/charts/tgops-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v2
+    appVersion: 1.2.0
+    created: "2025-04-17T14:57:09.900168+07:00"
     description: A Helm chart for Kubernetes Telegram Bot
     digest: ecaaaf697247af2e11feadc33f224e77aed2a8e08e39a6d2a8116f394ed6f87e
     name: tgops
@@ -13,7 +23,7 @@ entries:
     version: 1.2.1
   - apiVersion: v2
     appVersion: 1.2.0
-    created: "2025-04-17T14:51:24.256637+07:00"
+    created: "2025-04-17T14:57:09.899767+07:00"
     description: A Helm chart for Kubernetes Telegram Bot
     digest: 61e1280da625b1479e107b3435d1814bb4e14b9343c66461065104d45a7512ae
     name: tgops
@@ -23,7 +33,7 @@ entries:
     version: 1.2.0
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-04-17T14:51:24.256217+07:00"
+    created: "2025-04-17T14:57:09.899415+07:00"
     description: A Helm chart for Kubernetes Telegram Bot
     digest: b42725e3d1d5c4a139e85607e9df091ceece0c29eb46f442eb98a3543dac658a
     name: tgops
@@ -31,4 +41,4 @@ entries:
     urls:
     - https://sergei-li-tech.github.io/tgops/charts/tgops-0.1.2.tgz
     version: 0.1.2
-generated: "2025-04-17T14:51:24.255675+07:00"
+generated: "2025-04-17T14:57:09.898872+07:00"
