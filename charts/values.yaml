@@ -25,6 +25,7 @@ secrets:
 env:
   metricsPort: "8000"
   allowedUsers: "0000000000,1111111111"
+  # appLogsMap: '{"app1":"https://logs.example.com/app1","app2":"https://logs.example.com/app2"}'
 
 resources:
   requests:

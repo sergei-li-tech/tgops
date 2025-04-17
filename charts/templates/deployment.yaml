@@ -37,5 +37,9 @@ spec:
               key: token
         - name: ALLOWED_USERS
           value: "{{ .Values.env.allowedUsers }}"
+        {{- if .Values.env.appLogsMap }}
+        - name: APP_LOGS_MAP
+          value: "{{ .Values.env.appLogsMap }}"
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
