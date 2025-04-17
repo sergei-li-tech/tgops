@@ -39,7 +39,7 @@ spec:
           value: "{{ .Values.env.allowedUsers }}"
         {{- if .Values.env.appLogsMap }}
         - name: APP_LOGS_MAP
-          value: "{{ .Values.env.appLogsMap }}"
+          value: "{{ .Values.env.appLogsMap | quote }}"
         {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
