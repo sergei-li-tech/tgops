@@ -219,7 +219,7 @@ async def logs_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             for name, url in APP_LOGS_MAP.items():
                 if app_name in name.lower():
-                    message += f"🔍 *{name}*\n{url}\n\n"
+                    message += f"🔍 [{name}]({url})\n\n"
                     found = True
             
             if not found:
@@ -227,34 +227,16 @@ async def logs_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             # Otherwise show all apps
             for name, url in APP_LOGS_MAP.items():
-                message += f"📊 *{name}*\n{url}\n\n"
-        
-        # Create inline keyboard with buttons for each app
-        keyboard = []
-        row = []
-        for i, (name, _) in enumerate(APP_LOGS_MAP.items()):
-            # Create new row after every 2 buttons
-            if i > 0 and i % 2 == 0:
-                keyboard.append(row)
-                row = []
-            row.append(InlineKeyboardButton(name, callback_data=f"logs:{name}"))
-        
-        # Add the last row if it has buttons
-        if row:
-            keyboard.append(row)
-        
-        reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
+                message += f"📊 [{name}]({url})\n\n"
         
         await update.message.reply_text(
             message, 
             parse_mode='Markdown',
-            reply_markup=reply_markup,
             disable_web_page_preview=True  # Don't show link previews
         )
     except Exception as e:
         ERROR_COUNTER.labels(type=type(e).__name__, command='logs').inc()
         await update.message.reply_text(f"Error retrieving log links: {str(e)}")
-
 
 async def suspend_release(namespace: str, name: str) -> bool:
     """Suspend a HelmRelease"""
